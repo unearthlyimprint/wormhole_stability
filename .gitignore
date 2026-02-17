@@ -1,0 +1,49 @@
+# Azure credentials (sensitive!)
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+pasqal_native/pasqal_env/
+scripts/quantum-env/
+scripts/venv_legacy/
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+
+# Archive (old drafts, personal scripts)
+archive/
+
+# Internal project tracking
+proj_progress/
+cfd_project_status_overview.md
+
+# Personal scripts with hardcoded credentials
+personal_scripts/
+
+# Compressed archives
+*.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
