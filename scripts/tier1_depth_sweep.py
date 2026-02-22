@@ -238,11 +238,13 @@ def run_azure(mode='azure_sim', shots=200):
     
     # --- Authentication ---
     print("1. Authenticating with Azure Quantum...")
-    tenant_id = "REDACTED_TENANT_ID"
-    resource_id = "REDACTED_RESOURCE_ID"
+    tenant_id = os.environ.get("AZURE_TENANT_ID")
+    resource_id = os.environ.get("AZURE_RESOURCE_ID")
     
     if not tenant_id or not resource_id:
         print("ERROR: Set AZURE_TENANT_ID and AZURE_RESOURCE_ID environment variables")
+        print("  export AZURE_TENANT_ID='your-tenant-id'")
+        print("  export AZURE_RESOURCE_ID='/subscriptions/.../providers/Microsoft.Quantum/Workspaces/...'")
         sys.exit(1)
     
     print("Authenticating with Azure Quantum...")

@@ -41,8 +41,11 @@ def main():
     from azure.quantum.qiskit import AzureQuantumProvider
     from azure.identity import DeviceCodeCredential
     
-    tenant_id = "REDACTED_TENANT_ID"
-    resource_id = "REDACTED_RESOURCE_ID"
+    tenant_id = os.environ.get("AZURE_TENANT_ID")
+    resource_id = os.environ.get("AZURE_RESOURCE_ID")
+    if not tenant_id or not resource_id:
+        print("  ERROR: Set AZURE_TENANT_ID and AZURE_RESOURCE_ID environment variables")
+        sys.exit(1)
     
     credential = DeviceCodeCredential(tenant_id=tenant_id)
     provider = AzureQuantumProvider(
