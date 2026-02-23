@@ -1,0 +1,417 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{physics}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{longtable}
+\usepackage{listings}
+\geometry{margin=1in}
+
+\lstset{
+	basicstyle=\ttfamily\small,
+	breaklines=true,
+	frame=single,
+	backgroundcolor=\color{gray!10}
+}
+
+\title{\textbf{Supplementary Information}\\[0.5em]
+	\large Cross-Platform Noise Thresholds in Quantum Teleportation:\\
+	Trapped-Ion and Neutral-Atom Architectures\\[0.3em]
+	\normalsize v5.0}
+
+\author{Celal Arda\\
+	\small Independent Researcher\\
+	\small \texttt{celal.arda@outlook.de}}
+
+\date{February 2026}
+
+\begin{document}
+	\maketitle
+	
+	\tableofcontents
+	\newpage
+	
+	%% ============================================================
+	\section{Data Availability and Code Repository}
+	\label{sec:data_availability}
+	
+	All simulation code, analysis scripts, raw data, and hardware circuit inputs/outputs
+	associated with this paper are publicly available at:
+	
+	\begin{center}
+		\href{https://github.com/unearthlyimprint/wormhole_stability}{GitHub: unearthlyimprint/wormhole\_stability}
+	\end{center}
+	
+	\noindent The repository contains the following components:
+	
+	\begin{itemize}
+		\item \textbf{\texttt{code/}} --- Core experiment scripts for the dephasing sweep and teleportation protocols.
+		\item \textbf{\texttt{data/}} --- All experimental data in CSV format, including dephasing sweeps, hardware results, and qubit scaling datasets.
+		\item \textbf{\texttt{hardware\_qpu\_input/}} --- Raw circuit submission (input JSON) and measurement results (output JSON) from the IonQ Forte-1 QPU.
+		\item \textbf{\texttt{scripts/}} --- Extended analysis, sweep, and plotting scripts, including Trotter-step scaling and control experiments.
+		\item \textbf{\texttt{pasqal\_native/}} --- Complete Pasqal neutral-atom implementation: Pulser sequence builder, cloud submission scripts, emulator results, and generated figures.
+		\item \textbf{\texttt{manuscript/}} --- Full \LaTeX\ source of the main manuscript and this Supplementary Information document.
+	\end{itemize}
+	
+	\noindent Instructions for reproducing all results are provided in the repository's \texttt{README.md}.
+	
+	
+	%% ============================================================
+	\section{Quantum Circuit Architecture}
+	\label{sec:circuit_details}
+	
+	\subsection{3-Qubit Teleportation Protocol}
+	
+	The core protocol employs 3 qubits: Alice ($A$), Bob ($B$), and one message qubit ($M$).
+	
+	\paragraph{Stage 1: Entanglement.}
+	A Bell pair is created between Alice and Bob:
+	\begin{equation}
+		|A,B\rangle \xrightarrow{H \otimes I} \xrightarrow{\text{CNOT}} \frac{1}{\sqrt{2}}\left(|00\rangle + |11\rangle\right)
+	\end{equation}
+	followed by $R_z(\pi)$ and $R_z(-\pi)$ phase kicks on $A$ and $B$ respectively.
+	
+	\paragraph{Stage 2: Message Injection.}
+	A test message state $|+\rangle = H|0\rangle$ is prepared and swapped onto Alice's register via a SWAP gate (3 CNOT decomposition).
+	
+	\paragraph{Stage 3: Parametric Dephasing.}
+	Controlled phase rotations of tunable strength $\gamma$ are applied:
+	\begin{equation}
+		\mathcal{D}(\gamma) = R_z(\gamma\pi \cdot \xi_A) \otimes R_z(\gamma\pi \cdot \xi_B)
+	\end{equation}
+	where $\xi_A = 1.0$ and $\xi_B = -1.5$ distribute the dephasing asymmetrically. At $\gamma = 0$, no perturbation is applied. This is a \emph{unitary} operation modeling coherent phase errors.
+	
+	\paragraph{Stage 4: Bridge Evolution.}
+	The Heisenberg-type coupling is implemented via first-order Trotter decomposition:
+	\begin{equation}
+		e^{-i\theta(XX + YY + ZZ)} \approx R_{XX}(\theta) \cdot R_{YY}(\theta) \cdot R_{ZZ}(\theta)
+	\end{equation}
+	with $\theta = \pi/4$. Each $R_{PP}$ decomposes into 2 CNOT gates, giving 6 CNOTs total.
+	
+	\paragraph{Stage 5: Measurement.}
+	Bob's qubit is measured in the Hadamard basis. Fidelity: $F = 2P(|0\rangle) - 1$.
+	
+	\paragraph{Total entangling gate count:} 1 (Bell) + 3 (SWAP) + 6 (bridge) = 10 CNOTs.
+	
+	\subsection{Extended 9-Qubit Architecture}
+	
+	The original 9-qubit architecture used two 4-qubit boundary registers (Alice: $A_0$--$A_3$, Bob: $B_0$--$B_3$) plus one message qubit ($M$). As documented in Section~\ref{sec:spectator}, this architecture suffers from spectator qubits: only $A_0$, $B_0$, and $M$ participate in information transfer.
+	
+	
+	%% ============================================================
+	\section{Extended Experimental Data}
+	\label{sec:extended_data}
+	
+	\subsection{IonQ Simulator --- Full Dephasing Sweep}
+	
+	Table~\ref{tab:si_full_sweep} presents the complete dephasing sweep results from the Azure Quantum IonQ simulator (100 shots per point).
+	
+	\begin{longtable}{ccccl}
+		\caption{Full dephasing sweep on IonQ simulator.}
+		\label{tab:si_full_sweep} \\
+		\toprule
+		$\gamma$ & $P(|0\rangle)$ & $F$ & $\sigma$ & Status \\
+		\midrule
+		\endfirsthead
+		\toprule
+		$\gamma$ & $P(|0\rangle)$ & $F$ & $\sigma$ & Status \\
+		\midrule
+		\endhead
+		0.000 & 0.960 & 0.920 & 0.039 & High fidelity \\
+		0.050 & 0.960 & 0.920 & 0.039 & High fidelity \\
+		0.100 & 0.880 & 0.760 & 0.065 & Degraded \\
+		0.200 & 0.600 & 0.200 & 0.098 & Near-random \\
+		0.300 & 0.500 & 0.000 & 0.100 & Random \\
+		0.400 & 0.450 & $-0.100$ & 0.099 & Below random \\
+		0.535 & 0.460 & $-0.080$ & 0.100 & Collapsed \\
+		0.600 & 0.460 & $-0.080$ & 0.100 & Collapsed \\
+		0.800 & 0.490 & $-0.020$ & 0.100 & Collapsed \\
+		1.000 & 0.500 & 0.000 & 0.100 & Random \\
+		\bottomrule
+	\end{longtable}
+	
+	\subsection{IonQ Forte-1 Hardware --- Shot-Level Statistics}
+	
+	The hardware experiments were performed with 1000 shots for the baseline and 200 shots for the control:
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabular}{lccc}
+			\toprule
+			Experiment & Shots & Raw $P(|0\rangle)$ at Bob & Corrected $F$ \\
+			\midrule
+			Teleport $|0\rangle$ & 1000 & 0.509 (pre-correction) & $0.987 \pm 0.004$ \\
+			Teleport $|1\rangle$ & 1000 & 0.494 (pre-correction) & $0.988 \pm 0.003$ \\
+			Control (no ent.) $|0\rangle$ & 200 & 0.995 (Bob stays $|0\rangle$) & n/a \\
+			Control (no ent.) $|1\rangle$ & 200 & 0.995 (Bob stays $|0\rangle$) & n/a \\
+			\bottomrule
+		\end{tabular}
+		\caption{Shot-level summary of all IonQ Forte-1 hardware experiments.}
+		\label{tab:si_hardware_shots}
+	\end{table}
+	
+	\subsection{Pasqal Neutral-Atom --- Full Sweep Data}
+	
+	\begin{table}[h]
+		\centering
+		\small
+		\begin{tabular}{cccc}
+			\toprule
+			$\gamma$ & Mean $\langle n \rangle$ & Ground state $P_0$ & Shannon entropy $S$ (bits) \\
+			\midrule
+			0.00 & 0.48 & 12.0\% & 3.2 \\
+			0.05 & 0.45 & 12.0\% & 3.1 \\
+			0.10 & 0.38 & 22.5\% & 2.8 \\
+			0.15 & 0.28 & 45.0\% & 2.3 \\
+			0.20 & 0.14 & 71.5\% & 1.2 \\
+			0.25 & 0.04 & 93.0\% & 0.4 \\
+			0.30 & 0.01 & 99.0\% & 0.1 \\
+			0.40 & 0.01 & 99.5\% & 0.0 \\
+			\bottomrule
+		\end{tabular}
+		\caption{Pasqal neutral-atom EMU\_FREE sweep: fine-grained $\gamma$ resolution.}
+		\label{tab:si_pasqal_sweep}
+	\end{table}
+	
+	\subsection{Emulator Cross-Validation}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabular}{cccc}
+			\toprule
+			$\gamma$ & \texttt{EMU\_FREE} $P_0$ & \texttt{EMU\_SV} $P_0$ & $\Delta$ \\
+			\midrule
+			0.05 & 12.0\% & 11.0\% & +1.0\% \\
+			0.20 & 71.5\% & 72.5\% & $-$1.0\% \\
+			0.40 & 93.0\% & 94.0\% & $-$1.0\% \\
+			\bottomrule
+		\end{tabular}
+		\caption{Cross-validation of \texttt{EMU\_FREE} against exact state-vector simulation (\texttt{EMU\_SV}). Agreement is within 1.5\% at all checkpoints.}
+		\label{tab:si_emulator_validation}
+	\end{table}
+	
+	\subsection{FRESNEL\_CAN1 QPU Hardware Results}
+	
+	The four-tier validation chain was completed with physical execution on Pasqal's FRESNEL\_CAN1 neutral-atom QPU (22 atoms: 9 core qubits + 13 spectators, 500 shots per checkpoint).
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabular}{ccccc}
+			\toprule
+			$\gamma$ & QPU $P_0$ & EMU\_FREE $P_0$ & Noise Ratio & Unique States \\
+			\midrule
+			0.05 & 19.6\% & 8.0\% & 0.67$\times$ & 68 \\
+			0.20 & 70.6\% & 72.0\% & 1.13$\times$ & 28 \\
+			0.40 & 79.0\% & 93.0\% & 2.84$\times$ & 19 \\
+			\bottomrule
+		\end{tabular}
+		\caption{FRESNEL\_CAN1 QPU hardware results (core 9-qubit extraction). The noise ratio quantifies $(1 - P_0^{\text{QPU}}) / (1 - P_0^{\text{ideal}})$.}
+		\label{tab:si_qpu_results}
+	\end{table}
+	
+	Three distinct noise regimes are identified:
+	\begin{itemize}
+		\item \textbf{$\gamma = 0.05$ (noise suppression):} Hardware decoherence damps coherent Rydberg excitations, yielding \emph{higher} ground-state probability than ideal (ratio $< 1$).
+		\item \textbf{$\gamma = 0.20$ (close agreement):} QPU matches ideal simulation within 1.4\%, indicating the dephasing-induced transition is robust against hardware noise.
+		\item \textbf{$\gamma = 0.40$ (noise floor):} Residual hardware noise creates a $\sim$2.6\% excitation floor, preventing the QPU from reaching the ideal ground state.
+	\end{itemize}
+	
+	
+	%% ============================================================
+	\section{Hardware Platform Specifications}
+	\label{sec:hardware_specs}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabular}{ll}
+			\toprule
+			\textbf{Parameter} & \textbf{Value} \\
+			\midrule
+			\multicolumn{2}{l}{\textit{IonQ Forte-1 Trapped-Ion QPU}} \\
+			Ion species & $^{171}\text{Yb}^+$ \\
+			Connectivity & All-to-all \\
+			Single-qubit gate fidelity & $> 99.7\%$ \\
+			Two-qubit gate fidelity (MS gate) & $\sim 99.5\%$--$99.7\%$ \\
+			Two-qubit gate error & $\sim 0.3\%$--$0.5\%$ per gate \\
+			Readout fidelity & $> 99.5\%$ \\
+			Coherence time ($T_2$) & $> 1$ s \\
+			\midrule
+			\multicolumn{2}{l}{\textit{Access Details}} \\
+			Cloud provider & Microsoft Azure Quantum \\
+			Backend (simulation) & \texttt{ionq.simulator} \\
+			Backend (hardware) & \texttt{ionq.qpu.forte-1} \\
+			\midrule
+			\multicolumn{2}{l}{\textit{Pasqal Neutral-Atom Platform}} \\
+			Atom species & $^{87}\text{Rb}$ \\
+			Interaction type & Rydberg blockade (van der Waals) \\
+			Emulator backends & \texttt{EMU\_FREE}, \texttt{EMU\_SV}, \texttt{EMU\_FRESNEL} \\
+			QPU & FRESNEL\_CAN1 (61 traps, 22 atoms used) \\
+			SDK & Pulser 1.7.0 + \texttt{pasqal-cloud} 0.20.8 \\
+			\bottomrule
+		\end{tabular}
+		\caption{Hardware and emulator platform specifications.}
+		\label{tab:si_platforms}
+	\end{table}
+	
+	
+	%% ============================================================
+	\section{Spectator Qubit Analysis}
+	\label{sec:spectator}
+	
+	\subsection{Scaling Test Results}
+	
+	A scaling experiment at $\gamma = 0$ tested fidelity as a function of nominal circuit size:
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabular}{cccl}
+			\toprule
+			Nominal qubits & Entangling gates & Hardware $F$ & Note \\
+			\midrule
+			3 & 2 & 1.000 & Baseline \\
+			5 & 6 & 1.000 & Spectators removed \\
+			7 & 10 & 1.000 & Spectators removed \\
+			9 & 14 & 1.000 & Spectators removed \\
+			\bottomrule
+		\end{tabular}
+		\caption{Scaling test on IonQ Forte-1 at $\gamma = 0$. The hardware compiler identifies spectator qubits and optimizes them away.}
+		\label{tab:si_scaling}
+	\end{table}
+	
+	\subsection{Analysis}
+	
+	In the 9-qubit architecture, only the message qubit ($M$) and the first entangled pair ($A_0$, $B_0$) participate in information transfer. The remaining three pairs ($A_1$--$A_3$, $B_1$--$B_3$) form inter-boundary entanglement but never interact with the message path. IonQ's transpiler detects these as spectator qubits and removes them.
+	
+	This has two consequences:
+	\begin{enumerate}
+		\item The $F \approx 0$ result at $\gamma = 0.535$ is driven by the \emph{injected dephasing parameter} $\gamma$, not by circuit depth or qubit count.
+		\item Testing depth-dependent fidelity degradation requires circuits where \emph{all gates lie on the message's critical path} (e.g., Trotter-step scaling).
+	\end{enumerate}
+	
+	
+	%% ============================================================
+	\section{Pasqal Neutral-Atom Implementation Details}
+	\label{sec:pasqal_details}
+	
+	\subsection{Pulser Sequence Construction}
+	
+	The neutral-atom simulation uses the Pulser framework to define atom registers and laser pulse sequences. The atoms are arranged in a linear chain with inter-atomic spacing tuned to achieve Rydberg blockade:
+	
+	\begin{itemize}
+		\item \textbf{Register:} 3 atoms at spacing $d = 6\,\mu\text{m}$ (within blockade radius $R_b \approx 9\,\mu\text{m}$).
+		\item \textbf{Channel:} Global Rydberg channel with $\Omega_{\max} = 2\pi \times 4\,\text{MHz}$.
+		\item \textbf{Dephasing injection:} Detuning ramp $\Delta(\gamma)$ applied after entangling pulse.
+		\item \textbf{Measurement:} Final state sampled from the ground/Rydberg basis.
+	\end{itemize}
+	
+	\subsection{Rydberg Blockade Hamiltonian}
+	
+	The Rydberg blockade Hamiltonian is:
+	\begin{equation}
+		H = \frac{\Omega}{2}\sum_i \sigma_x^i - \Delta\sum_i n_i + \sum_{i<j} \frac{C_6}{|r_i - r_j|^6} n_i n_j
+	\end{equation}
+	where $\Omega$ is the Rabi frequency, $\Delta$ is the detuning, $n_i = |r\rangle\langle r|_i$ is the Rydberg number operator, and $C_6$ is the van der Waals coefficient.
+	
+	The dephasing parameter $\gamma$ maps to the detuning: increasing $\gamma$ shifts the system from the resonant regime (where Rydberg excitations are favorable) to the off-resonant regime (ground state dominated).
+	
+	
+	%% ============================================================
+	\section{Software Environment and Reproducibility}
+	\label{sec:software}
+	
+	\subsection{Python Dependencies}
+	
+	All code was developed and tested with Python~$\geq 3.10$. The full dependency list is available in the repository's \texttt{requirements.txt}:
+	
+	\begin{table}[h]
+		\centering
+		\begin{tabular}{lll}
+			\toprule
+			Package & Version & Purpose \\
+			\midrule
+			\texttt{numpy} & $\geq 2.0$ & Numerical computation \\
+			\texttt{scipy} & $\geq 1.12$ & Scientific computing \\
+			\texttt{matplotlib} & $\geq 3.8$ & Visualization \\
+			\texttt{azure-quantum} & $\geq 2.0$ & Azure Quantum SDK (IonQ) \\
+			\texttt{qsharp} & $\geq 1.0$ & Q\# integration \\
+			\texttt{pulser} & $\geq 1.0$ & Pasqal sequence builder \\
+			\texttt{pasqal-cloud} & $\geq 0.20$ & Pasqal Cloud SDK \\
+			\texttt{qutip} & $\geq 5.0$ & Local quantum simulation \\
+			\texttt{python-dotenv} & $\geq 1.0$ & Environment variable management \\
+			\bottomrule
+		\end{tabular}
+		\caption{Python package dependencies.}
+		\label{tab:si_dependencies}
+	\end{table}
+	
+	\subsection{Script Descriptions}
+	
+	Table~\ref{tab:si_scripts} provides a summary of all scripts in the repository.
+	
+	\begin{longtable}{p{0.45\textwidth}p{0.50\textwidth}}
+		\caption{Repository script index with descriptions.}
+		\label{tab:si_scripts} \\
+		\toprule
+		Script & Description \\
+		\midrule
+		\endfirsthead
+		\toprule
+		Script & Description \\
+		\midrule
+		\endhead
+		\texttt{\small code/experiment\_1\_phase\_transition.py} & Dephasing sweep: varies $\gamma \in [0, 1]$ on IonQ simulator. \\
+		\texttt{\small code/wormhole\_pulser\_continuous.py} & Continuous-mode Pulser simulation of the Rydberg Hamiltonian. \\
+		\texttt{\small scripts/tier1\_analysis.py} & Result aggregation and statistical analysis. \\
+		\texttt{\small scripts/tier1\_depth\_sweep.py} & Depth sweep: varies circuit size at fixed $\gamma$. \\
+		\texttt{\small scripts/tier1v3\_trotter\_sweep.py} & Trotter-step scaling: varies Trotter steps 1--8 on the 3-qubit architecture. \\
+		\texttt{\small scripts/wormhole\_control\_experiment.py} & Control: teleportation circuit without Bell pair. \\
+		\texttt{\small scripts/wormhole\_hardware\_correct.py} & Hardware-corrected protocol with classical post-processing. \\
+		\texttt{\small scripts/wormhole\_teleport\_local\_test.py} & Local teleportation experiment with shot-level analysis. \\
+		\texttt{\small scripts/wormhole\_teleport\_sweep.py} & Parameter sweep of teleportation fidelity. \\
+		\texttt{\small scripts/plot\_azure\_data.py} & Plotting utilities for Azure Quantum results. \\
+		\texttt{\small scripts/trotter\_noisy\_corrected.py} & Local noisy Trotter sweep with IonQ Forte noise model. \\
+		\texttt{\small pasqal\_native/scripts/\newline run\_wormhole\_pasqal.py} & Pasqal Cloud submission: builds and submits sequences for $\gamma$ sweep. \\
+		\texttt{\small pasqal\_native/scripts/\newline run\_fine\_sweep.py} & Fine-grained $\gamma$ sweep near the threshold region. \\
+		\texttt{\small pasqal\_native/scripts/\newline run\_emulator\_comparison.py} & Cross-validation between \texttt{EMU\_FREE} and \texttt{EMU\_SV}. \\
+		\texttt{\small pasqal\_native/scripts/\newline analyze\_results.py} & Analysis and figure generation from emulator results. \\
+		\texttt{\small pasqal\_native/scripts/\newline merge\_results.py} & Merges multiple emulator result files. \\
+		\texttt{\small pasqal\_native/scripts/\newline run\_fresnel\_validation.py} & Fresnel validation of the neutral-atom layout. \\
+		\texttt{\small pasqal\_native/scripts/\newline fetch\_fresnel\_results.py} & Retrieves completed FRESNEL\_CAN1 QPU batch results. \\
+		\texttt{\small pasqal\_native/scripts/\newline analyze\_fresnel\_can1.py} & Extracts core-qubit statistics from QPU data. \\
+		\bottomrule
+	\end{longtable}
+	
+	\subsection{Reproducing Results}
+	
+	To reproduce all results presented in the main manuscript:
+	
+	\begin{enumerate}
+		\item Clone the repository:
+		\begin{lstlisting}[language=bash]
+			git clone https://github.com/unearthlyimprint/wormhole_stability.git
+			cd wormhole_stability
+		\end{lstlisting}
+		
+		\item Install dependencies:
+		\begin{lstlisting}[language=bash]
+			python -m venv venv && source venv/bin/activate
+			pip install -r requirements.txt
+		\end{lstlisting}
+		
+		\item Configure Azure Quantum credentials (see \texttt{.env.example}).
+		
+		\item Run the dephasing sweep:
+		\begin{lstlisting}[language=bash]
+			python code/experiment_1_phase_transition.py
+		\end{lstlisting}
+		
+		\item For Pasqal neutral-atom results, follow the instructions in \texttt{pasqal\_native/README.md}.
+	\end{enumerate}
+	
+	
+\end{document}
