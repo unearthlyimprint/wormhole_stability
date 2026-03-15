@@ -3,6 +3,12 @@
 **Trapped-Ion and Neutral-Atom Architectures**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python ≥3.10](https://img.shields.io/badge/Python-≥3.10-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Azure Quantum](https://img.shields.io/badge/Azure_Quantum-0078D4?logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/products/quantum)
+[![IonQ Forte-1](https://img.shields.io/badge/IonQ-Forte--1_QPU-6332F5?logo=atom&logoColor=white)](https://ionq.com)
+[![Pasqal FRESNEL](https://img.shields.io/badge/Pasqal-FRESNEL__CAN1_QPU-00B388)](https://www.pasqal.com)
+[![Qiskit](https://img.shields.io/badge/Qiskit-Circuit_Simulation-6929C4?logo=qiskit&logoColor=white)](https://qiskit.org)
+[![Pulser](https://img.shields.io/badge/Pulser-Neutral_Atom_Sequences-FF6F00)](https://github.com/pasqal-io/Pulser)
 
 ---
 
@@ -83,8 +89,8 @@ We present a systematic study of teleportation fidelity under controlled paramet
 
 ```bash
 # Clone repository
-git clone https://github.com/unearthlyimprint/wormhole_stability.git
-cd wormhole_stability
+git clone https://github.com/unearthlyimprint/teleportation-noise-thresholds.git
+cd teleportation-noise-thresholds
 
 # Create virtual environment
 python -m venv venv
